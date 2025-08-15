@@ -1,0 +1,621 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  background-color: #000;
+  color: #fff;
+}
+
+#container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#video-container,
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  transition: opacity 0.3s ease;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Show controls on hover for both normal and fullscreen modes */
+#controls:hover,
+#video-container:hover #controls {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Add a larger hover trigger area */
+#controls::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 100px; /* Increased height for better hover detection */
+}
+
+/* Fullscreen styles */
+:fullscreen #controls,
+:-webkit-full-screen #controls,
+:-moz-full-screen #controls,
+:full-screen #controls {
+    opacity: 0;
+    pointer-events: none;
+}
+
+:fullscreen #controls:hover,
+:-webkit-full-screen #controls:hover,
+:-moz-full-screen #controls:hover,
+:full-screen #controls:hover,
+:fullscreen #video-container:hover #controls,
+:-webkit-full-screen #video-container:hover #controls,
+:-moz-full-screen #video-container:hover #controls,
+:full-screen #video-container:hover #controls {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Add these new rules */
+.fullscreen-active #controls {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.fullscreen-active #controls:hover,
+.fullscreen-active #video-container:hover #controls {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.control-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 15px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s;
+}
+
+.control-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.control-button.active {
+  background-color: #1e88e5;
+}
+
+#play-pause svg {
+  width: 24px;
+  height: 24px;
+  fill: #fff;
+}
+
+#play-pause .pause-icon {
+  display: none;
+}
+
+#play-pause.playing .play-icon {
+  display: none;
+}
+
+#play-pause.playing .pause-icon {
+  display: block;
+}
+
+#progress-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 0 15px;
+}
+
+#progress-bar {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: height 0.2s;
+}
+
+#progress-container:hover #progress-bar {
+  height: 10px;
+}
+
+#progress {
+  height: 100%;
+  width: 0%;
+  background-color: #1e88e5;
+  border-radius: 4px;
+  transition: width 0.1s;
+}
+
+#time {
+  font-size: 12px;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: monospace;
+}
+
+#volume-container {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.volume-icon {
+  width: 24px;
+  height: 24px;
+  fill: #fff;
+  margin-right: 8px;
+}
+
+#volume-slider {
+  width: 80px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  appearance: none;
+  outline: none;
+  transition: height 0.2s;
+}
+
+#volume-container:hover #volume-slider {
+  height: 10px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #1e88e5;
+  cursor: pointer;
+  margin-top: -5px;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  background: #555;
+  border-radius: 3px;
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+#loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: #fff;
+  z-index: 1000;
+  display: none;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(30, 136, 229, 0.3);
+  border-top-color: #1e88e5;
+  border-radius: 50%;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#drop-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.8);
+  border: 3px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  margin: 20px;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 150;
+}
+
+#drop-area.active {
+  pointer-events: auto;
+  background: rgba(30, 136, 229, 0.1);
+  border-color: rgba(30, 136, 229, 0.6);
+}
+
+#drop-area p {
+  margin: 10px 0;
+  color: #ccc;
+  font-size: 18px;
+}
+
+#file-select-btn {
+  background: #1e88e5;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin-top: 15px;
+}
+
+#file-select-btn:hover {
+  background: #1976d2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#drop-area #file-select-btn {
+  pointer-events: auto;
+}
+
+#info-overlay {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #222;
+  color: #fff;
+  padding: 24px 32px;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  max-width: 350px;
+  min-width: 260px;
+}
+
+#info-overlay.active {
+  display: block;
+}
+
+#info-overlay h3 {
+  margin: 0 0 16px;
+  font-size: 1.2em;
+  text-align: center;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.shortcut-row .key {
+  background: #444;
+  color: #fff;
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-right: 6px;
+  font-family: monospace;
+  font-size: 0.95em;
+}
+
+#close-info {
+  margin-top: 16px;
+  text-align: center;
+  cursor: pointer;
+  color: #aaa;
+  background: #333;
+  border-radius: 4px;
+  padding: 6px 0;
+  transition: background 0.2s, color 0.2s;
+}
+
+#close-info:hover {
+  background: #444;
+  color: #fff;
+}
+
+#info-btn {
+  margin-left: 8px;
+  font-size: 1.2em;
+  cursor: pointer;
+  user-select: none;
+}
+
+.fullscreen-active #top-bar,
+.fullscreen-active #controls {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.fullscreen-active #video-container:hover #controls,
+.fullscreen-active #controls:hover {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.overlay-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+#brightness-indicator {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#brightness-indicator.visible {
+    opacity: 1;
+}
+
+/* Optional: Add a custom position for brightness if needed */
+#brightness-indicator {
+    top: 60px; /* Position it below other overlays if needed */
+    background-color: rgba(0, 0, 0, 0.8);
+    font-weight: bold;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    margin: 0 15px;
+}
+
+#brightness-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#brightness-control i {
+    color: white;
+    font-size: 16px;
+}
+
+#brightness-slider {
+    width: 80px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    appearance: none;
+    outline: none;
+    transition: height 0.2s;
+}
+
+#brightness-control:hover #brightness-slider {
+    height: 10px;
+}
+
+#brightness-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #1e88e5;
+    cursor: pointer;
+    margin-top: -4px;
+}
+
+#brightness-slider::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #1e88e5;
+    cursor: pointer;
+    border: none;
+}
+
+#subtitle-container {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    text-align: center;
+    color: white;
+    font-size: 20px;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    width: 80%;
+    max-width: 800px;
+}
+
+.subtitle-text {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 5px 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Add these styles for the subtitle menu */
+.subtitle-menu {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.9);
+    border-radius: 4px;
+    padding: 8px 0;
+    min-width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1001;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.subtitle-option {
+    padding: 8px 16px;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.subtitle-option:hover {
+    background-color: rgba(30, 136, 229, 0.5);
+}
+
+.subtitle-option.active {
+    background-color: #1e88e5;
+}
+
+.subtitle-option i {
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+  #controls {
+    padding: 0 10px;
+    height: 80px;
+  }
+
+  .control-button {
+    width: 36px;
+    height: 36px;
+    margin-right: 10px;
+  }
+
+  #time {
+    font-size: 10px;
+  }
+
+  #volume-slider {
+    width: 60px;
+  }
+}
+
+.control-menu {
+    position: absolute;
+    bottom: 60px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+    padding: 8px 0;
+    min-width: 200px;
+    z-index: 1000;
+    display: none;
+}
+
+.menu-item {
+    padding: 8px 16px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.menu-item.active:before {
+    content: '✓';
+    margin-right: 8px;
+}
+
+#audio-track-btn, #load-audio-btn {
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+#audio-track-btn:hover, #load-audio-btn:hover {
+    opacity: 1;
+}
+
+#audio-track-menu {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Add a separator line before the "Load External Audio" option */
+.menu-item:last-child {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: 8px;
+    padding-top: 8px;
+}

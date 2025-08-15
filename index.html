@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>360° Video Player</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="container">
+    <div id="video-container">
+      <!-- Add this line -->
+      <div id="brightness-indicator" class="overlay-indicator">Brightness: 100%</div>
+    </div>
+    <div id="controls">
+      <div id="play-pause" class="control-button">
+        <svg class="play-icon" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"></path>
+        </svg>
+        <svg class="pause-icon" viewBox="0 0 24 24">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
+        </svg>
+      </div>
+      <div id="progress-container">
+        <div id="progress-bar">
+          <div id="progress"></div>
+        </div>
+        <div id="time">00:00 / 00:00</div>
+      </div>
+      <div id="volume-container">
+        <svg class="volume-icon" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path>
+        </svg>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+      </div>
+      <div id="info-btn" class="control-button tooltip" title="Keyboard Shortcuts">ⓘ</div>
+    </div>
+    <div id="loading">
+      <div class="spinner"></div>
+      <div>Loading Video...</div>
+    </div>
+    <div id="drop-area">
+      <p>Drag & Drop a 360° video file here</p>
+      <p>or</p>
+      <button id="file-select-btn">Select Video File</button>
+    </div>
+    <div id="info-overlay">
+      <h3>Keyboard Shortcuts</h3>
+      <div class="shortcut-row"><div><span class="key">Space</span></div><div>Play/Pause</div></div>
+      <div class="shortcut-row"><div><span class="key">F</span></div><div>Toggle Fullscreen</div></div>
+      <div class="shortcut-row"><div><span class="key">←</span> <span class="key">→</span></div><div>Seek -/+ 10 seconds</div></div>
+      <div class="shortcut-row"><div><span class="key">↑</span> <span class="key">↓</span></div><div>Volume Up/Down</div></div>
+      <div class="shortcut-row"><div><span class="key">M</span></div><div>Mute/Unmute</div></div>
+      <div class="shortcut-row"><div><span class="key">S</span></div><div>Change Playback Speed</div></div>
+      <div class="shortcut-row"><div><span class="key">R</span></div><div>Reset Camera Position</div></div>
+      <div class="shortcut-row"><div><span class="key">1</span> <span class="key">2</span> <span class="key">3</span></div><div>Switch Viewing Modes</div></div>
+      <div class="shortcut-row"><div><span class="key">Scroll</span></div><div>Zoom In/Out</div></div>
+      <div class="shortcut-row"><div><span class="key">Shift</span>+<span class="key">Scroll</span></div><div>Seek Forward/Backward</div></div>
+      <div id="close-info">Close</div>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>

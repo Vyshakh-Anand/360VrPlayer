@@ -1,0 +1,13 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.Rogue.vr-video-player
+productName: VR Video Player
+mac:
+  category: public.app-category.video
+win:
+  target: nsis
+linux:
+  target: AppImage
+files: []
+electronVersion: 25.9.8
